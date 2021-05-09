@@ -208,6 +208,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         totalHostnames-=1;
         Writepreferences("HOSTNAME_NUMBER",String.valueOf(totalHostnames));
     }
+
     private void dialogConfigWiFi(){
         final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         View formView = getLayoutInflater().inflate(R.layout.formulario_dialog,null);
