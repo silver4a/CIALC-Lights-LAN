@@ -22,7 +22,11 @@ public class BluetoothService {
     public static BluetoothService instance;
     Context context;
     Activity activity;
+    BluetoothSocket mSocket;
+    BluetoothDevice mDevice;
+    OutputStream mOutputStream;
     boolean state = false;
+    public static byte S_Bluetooth=0;
 
     //Singleton.
     public static synchronized BluetoothService getInstance(Context context, Activity activity){
@@ -101,10 +105,6 @@ public class BluetoothService {
         }
     }
     //****************************************************************************
-    BluetoothSocket mSocket;
-    BluetoothDevice mDevice;
-    OutputStream mOutputStream;
-    static byte S_Bluetooth=0;
     //Inicia conexión Bluetooth
     public void bluetoothConect(OnConnect onConnect)  throws IOException {
         final Thread carga = new Thread(){
@@ -202,7 +202,7 @@ public class BluetoothService {
             String msg = String.valueOf(i);
             msg += "\n";
             mOutputStream.write(msg.getBytes());
-            Toast.makeText(context, "OK", Toast.LENGTH_SHORT).show();
+           // Toast.makeText(context, "OK", Toast.LENGTH_SHORT).show();
             S_Bluetooth = 1;
         } catch (Exception e) {
             Toast.makeText(context, "Error de conexion", Toast.LENGTH_SHORT).show();
@@ -211,7 +211,7 @@ public class BluetoothService {
     //Finaliza la conexión Bluetooth
     public void bluetoothFinish() {
         try {
-            writeB("Finish");
+            //writeB("Finish");
             mOutputStream.close();
             mSocket.close();
             state = false;
@@ -236,6 +236,13 @@ public class BluetoothService {
                     //add_item_list(R.drawable.rcv, DataStringIN.toString()); //Imprimo en la lista el dato.
                     //sound.start();
                     //vibrator.vibrate(100);
+
+                    if(DataStringIN.toString().contains("OK")){
+                        Toast.makeText(context, "Configuración completa.", Toast.LENGTH_SHORT).show();
+                        bluetoothFinish();
+                    }
+
+                    Toast.makeText(context, DataStringIN.toString(), Toast.LENGTH_SHORT).show();
                     DataStringIN.delete(0, DataStringIN.length());
                 }
             }
