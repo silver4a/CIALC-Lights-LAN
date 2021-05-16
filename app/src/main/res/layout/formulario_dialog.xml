@@ -46,6 +46,14 @@
                 android:layout_marginTop="35dp"
                 android:text="Hostname" />
 
+            <TextView
+                android:id="@+id/ipAddressTxt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="35dp"
+                android:text="IP asignada" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -81,6 +89,16 @@
                 android:layout_marginTop="10dp"
                 android:ems="10"
                 android:hint="Hostname"
+                android:inputType="text" />
+
+            <EditText
+                android:id="@+id/ipAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="10dp"
+                android:ems="10"
+                android:hint="Ip asignada"
                 android:inputType="text" />
 
         </LinearLayout>

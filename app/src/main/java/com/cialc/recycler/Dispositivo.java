@@ -5,11 +5,21 @@ import android.graphics.Bitmap;
 public class Dispositivo {
 
     private String hostname;
+    private String ipAddress;
     private Bitmap image;
 
-    public Dispositivo(String hostname, Bitmap image) {
+    public String getIpAddress() {
+        return ipAddress;
+    }
+
+    public void setIpAddress(String ipAddress) {
+        this.ipAddress = ipAddress;
+    }
+
+    public Dispositivo(String hostname, String ipAddress, Bitmap image) {
         this.hostname = hostname;
         this.image = image;
+        this.ipAddress = ipAddress;
     }
 
     public String getHostname() {

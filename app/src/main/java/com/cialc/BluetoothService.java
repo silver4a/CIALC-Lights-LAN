@@ -6,15 +6,20 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Handler;
+import android.util.Log;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.UUID;
 
@@ -27,6 +32,10 @@ public class BluetoothService {
     OutputStream mOutputStream;
     boolean state = false;
     public static byte S_Bluetooth=0;
+    BluetoothAdapter bluetoothAdapter;
+    ArrayList<String> decivesAvailable;
+    ArrayAdapter<String> arrayAdapter;
+    public OnResponse onResponse;
 
     //Singleton.
     public static synchronized BluetoothService getInstance(Context context, Activity activity){
@@ -40,6 +49,8 @@ public class BluetoothService {
     public BluetoothService(Context context, Activity activity){
         this.context = context;
         this.activity = activity;
+        this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        this.decivesAvailable = new ArrayList<String>();
     }
 
     //***************************************************************************************
@@ -47,7 +58,6 @@ public class BluetoothService {
     //***************************************************************************************
     //Funcion que configura, activa y busca los perifericos conectados con el dispositivo.
     public void configBluetooth(OnConnect onConnect){
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if(bluetoothAdapter == null){
             Toast.makeText(context, "El dispositivo no soporta Bluetooth", Toast.LENGTH_SHORT).show();
         }
@@ -76,19 +86,16 @@ public class BluetoothService {
                     String[] DEVICE_ALL_INFO = Device_all_info.split("/");
                     //Alert showing devices information.
                     AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setItems(DEVICE_ALL_INFO, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            for(BluetoothDevice device : pairedDevices){
-                                if(device.getName().equals(namesDevices[which])){
-                                    mDevice=device;
-                                    Toast.makeText(context, "Conectando a: "+device.getName(), Toast.LENGTH_SHORT).show();
-                                    try {
-                                        progress_dialog();
-                                        bluetoothConect(onConnect);
-                                    } catch (Exception e) {
-                                        Toast.makeText(context, "Error de conexión", Toast.LENGTH_SHORT).show();
-                                    }
+                    builder.setItems(DEVICE_ALL_INFO, (dialog, which) -> {
+                        for(BluetoothDevice device : pairedDevices){
+                            if(device.getName().equals(namesDevices[which])){
+                                mDevice=device;
+                                Toast.makeText(context, "Conectando a: "+device.getName(), Toast.LENGTH_SHORT).show();
+                                try {
+                                    progress_dialog();
+                                    bluetoothConect(onConnect);
+                                } catch (Exception e) {
+                                    Toast.makeText(context, "Error de conexión", Toast.LENGTH_SHORT).show();
                                 }
                             }
                         }
@@ -242,12 +249,15 @@ public class BluetoothService {
                         bluetoothFinish();
                     }
 
-                    Toast.makeText(context, DataStringIN.toString(), Toast.LENGTH_SHORT).show();
+                    onResponse.OnSuccess(DataStringIN.toString());
+
+                    //Toast.makeText(context, DataStringIN.toString(), Toast.LENGTH_SHORT).show();
                     DataStringIN.delete(0, DataStringIN.length());
                 }
             }
         };
     }
+
     //clase de segundo plano que lee la informacion obtenida.
     public class ConnectedThread extends Thread {
         private final InputStream mmInStream;
@@ -287,6 +297,11 @@ public class BluetoothService {
 
     public interface OnConnect{
         void OnSuccess();
+        void OnFail();
+    }
+
+    public interface OnResponse{
+        void OnSuccess(String response);
         void OnFail();
     }
 }

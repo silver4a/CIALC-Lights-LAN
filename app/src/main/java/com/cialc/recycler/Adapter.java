@@ -61,6 +61,7 @@ public class Adapter extends RecyclerView.Adapter <Adapter.ViewHolderItems> {
         public void onClick(View v) {
             int clickItem = getAdapterPosition();
             Dispositivo itemSelect = new Dispositivo(listDispositivos.get(clickItem).getHostname(),
+                                                    listDispositivos.get(clickItem).getIpAddress(),
                                                     listDispositivos.get(clickItem).getImage());
 
             listClickItem.onListItemClick(v.getId(),clickItem,itemSelect);
