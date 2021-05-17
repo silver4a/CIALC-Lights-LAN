@@ -30,23 +30,17 @@ public class VolleyConnection {
         final String TAG = "Request";
         // Request a string response from the provided URL.
         stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        request.onResponse(response);
-                        queue.cancelAll(TAG); //Cancelo todos los procesos.
-                        queue.stop(); //detengo el queue.
-                        stringRequest.cancel(); //Detengo el stringR.
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                request.onError(error.getMessage());
-                queue.cancelAll(TAG); //Cancelo todos los procesos.
-                queue.stop(); //detengo el queue.
-                stringRequest.cancel(); //Detengo el stringR.
-            }
-        });
+                response -> {
+                    request.onResponse(response);
+                    queue.cancelAll(TAG); //Cancelo todos los procesos.
+                    queue.stop(); //detengo el queue.
+                    stringRequest.cancel(); //Detengo el stringR.
+                }, error -> {
+                    queue.cancelAll(TAG); //Cancelo todos los procesos.
+                    queue.stop(); //detengo el queue.
+                    stringRequest.cancel(); //Detengo el stringR.
+                    request.onError(error.getMessage());
+                });
         // Set the tag on the request.
         stringRequest.setTag(TAG);
         // Add the request to the RequestQueue.

@@ -11,6 +11,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -149,9 +150,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                                 @Override
                                 public void onError(String errorMessage) {
-                                    Log.i("INFO - ERROR MESSAJE",errorMessage);
+                                    //Log.i("INFO - ERROR MESSAJE",errorMessage);
                                     progressDialog.dismiss();
-                                    Toast.makeText(MainActivity.this, "Ocurrió un error al emparejar dispositivo", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "Es necesario que reinicie el host.", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         },15000);
@@ -393,7 +394,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 @Override
                 public void onResponse(String response) {
                     if(response.contains("AUTENTICADO")){
-                        Toast.makeText(MainActivity.this, "Autenticado", Toast.LENGTH_SHORT).show();
+                        response = response.replace("\r\n","");
+
+                        String informacion[] = response.split(",");
+
+                        //Toast.makeText(MainActivity.this, "Autenticado", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(getApplicationContext(),MainActivity2.class);
+                        intent.putExtra("host",device.getHostname() + " - "+device.getIpAddress());
+                        intent.putExtra("url",url.substring(0,url.lastIndexOf("/")));
+                        intent.putExtra("progressIntensidad",informacion[1]);
+                        intent.putExtra("progressTemperatura",informacion[2]);
+                        Log.i("Progreso",url.substring(0,url.lastIndexOf("/")));
+                        startActivity(intent);
                         progressDialog.dismiss();
                     }
                 }
