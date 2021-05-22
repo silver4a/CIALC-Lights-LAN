@@ -382,7 +382,12 @@ public class BluetoothService {
                         }
                         arrayAdapter.notifyDataSetChanged();
                         isScan = false;
-                        dialogDevices();
+                        if(devicesAvailable.size() > 0)
+                            dialogDevices();
+                        else{
+                            Toast.makeText(context, "No se encontraron dispositivos para vincular.", Toast.LENGTH_SHORT).show();
+                            progressDialog.dismiss();
+                        }
                     }else{
                         activity.unregisterReceiver(broadcastReceiver);
                         onConnect.OnSuccess();
