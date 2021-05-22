@@ -19,6 +19,7 @@ import android.graphics.drawable.Drawable;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.text.format.Formatter;
 import android.util.Log;
 import android.view.View;
@@ -35,18 +36,21 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, Adapter.ListClickItem {
     //Controles globales.
-    ImageView bt_bluetooth;
+    ImageView bt_bluetooth,bt_radar;
 
     //Objeto de bluetooth.
     BluetoothService bt;
 
     //Progress
-    ProgressDialog progressDialog;
+    static ProgressDialog progressDialog;
 
     //Array de dispositivos.
     ArrayList<Dispositivo> listDevices;
     RecyclerView recyclerView;
     Adapter adapterDevices;
+
+    //Radar runnable
+    Handler handler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +61,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //Configuración de las vistas
         bt_bluetooth = (ImageView) findViewById(R.id.bt_bluetooth);
         bt_bluetooth.setOnClickListener(this);
+        bt_radar = (ImageView) findViewById(R.id.bt_radar);
+        bt_radar.setOnClickListener(this);
         recyclerView = findViewById(R.id.recycler);
         progressDialog = new ProgressDialog(this);
         //----------------------------------------
@@ -74,8 +80,72 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.bt_bluetooth:
                 bluetoohConfig();
                 break;
+            case R.id.bt_radar:
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setMessage("¿Desea buscar los dispositivos que ya fueron configurados en la red?, esto puede tomar 1 minuto.");
+                builder.setPositiveButton("Continuar", (dialog, which) -> {
+                    progressDialog = new ProgressDialog(this);
+                    progressDialog.setMessage("Buscando los dispositivos en la red.");
+                    progressDialog.setCancelable(false);
+                    progressDialog.show();
+                    handler.postDelayed(runnable, 1000);
+                }).setNegativeButton("Cancelar", (dialog, which) -> {
+                    ;;
+                });
+
+                AlertDialog alertDialog = builder.create();
+                alertDialog.show();
+                break;
         }
     }
+
+    Runnable runnable = () -> {
+        Log.d("RADAR","GO");
+        ArrayList<String> urls = new ArrayList<String>();
+        for(int k=200;k<=255;k++){
+            urls.add("http://" + getIPAddress(String.valueOf(k)) + "/data?ping=1") ;
+        }
+
+        for(String url : urls){
+            Log.d("RADAR",url);
+            progressDialog.setMessage(url);
+            VolleyConnection.getInstance(this).setRequest(url, 1000,new VolleyConnection.IVolleyResponse() {
+                @Override
+                public void onResponse(String response) {
+                    if(response.contains("AUTENTICADO")){
+                        String hostText = response.split(",")[1].replace("\n","");
+                        String ip = url.replace("http://","").replace("/data?ping=1","");
+                        boolean add = true;
+                        for(Dispositivo dispositivo : listDevices){
+                            if(dispositivo.getIpAddress().equals(ip)){
+                                add = false;
+                            }
+                        }
+                        if(add) {
+                            listDevices.add(new Dispositivo(hostText,
+                                    ip,
+                                    getBitmap(R.drawable.wifi_ico)));
+                            adapterDevices.notifyDataSetChanged();
+                            savePreferences();
+                        }
+                    }
+                }
+
+                @Override
+                public void onError(String errorMessage) {
+
+                }
+            });
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        progressDialog.dismiss();
+    };
+
 
     @Override
     protected void onDestroy() {

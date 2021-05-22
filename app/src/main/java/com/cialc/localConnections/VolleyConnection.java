@@ -2,6 +2,7 @@ package com.cialc.localConnections;
 
 import android.content.Context;
 
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -25,7 +26,7 @@ public class VolleyConnection {
         return instance;
     }
 
-    public void setRequest(String url, final IVolleyResponse request){
+    public void setRequest(String url, final int timeout,final IVolleyResponse request){
         final RequestQueue queue = Volley.newRequestQueue(context);
         final String TAG = "Request";
         // Request a string response from the provided URL.
@@ -43,8 +44,15 @@ public class VolleyConnection {
                 });
         // Set the tag on the request.
         stringRequest.setTag(TAG);
+        stringRequest.setRetryPolicy(new DefaultRetryPolicy(timeout
+                        ,DefaultRetryPolicy.DEFAULT_MAX_RETRIES
+                        ,DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         // Add the request to the RequestQueue.
         queue.add(stringRequest);
+    }
+
+    public void setRequest(String url,final IVolleyResponse request){
+        setRequest(url,2000,request);
     }
 
     public interface IVolleyResponse{
