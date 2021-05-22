@@ -1,5 +1,6 @@
-package com.cialc;
+package com.cialc.Bluetooth;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -11,10 +12,14 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
+
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,11 +36,13 @@ public class BluetoothService {
     BluetoothDevice mDevice;
     OutputStream mOutputStream;
     boolean state = false;
+    boolean isScan = false;
     public static byte S_Bluetooth=0;
     BluetoothAdapter bluetoothAdapter;
-    ArrayList<String> decivesAvailable;
+    ArrayList<BluetoothDevice> devicesAvailable;
     ArrayAdapter<String> arrayAdapter;
     public OnResponse onResponse;
+    public OnConnect onConnect;
 
     //Singleton.
     public static synchronized BluetoothService getInstance(Context context, Activity activity){
@@ -50,8 +57,17 @@ public class BluetoothService {
         this.context = context;
         this.activity = activity;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        this.decivesAvailable = new ArrayList<String>();
+        this.devicesAvailable = new ArrayList<BluetoothDevice>();
+        arrayAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1);
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+
+        activity.registerReceiver(broadcastReceiver,filter);
     }
+
 
     //***************************************************************************************
     //                      CONFIGURACIÓN Y CONEXIÓN BLUETOOTH
@@ -98,6 +114,11 @@ public class BluetoothService {
                                     Toast.makeText(context, "Error de conexión", Toast.LENGTH_SHORT).show();
                                 }
                             }
+                        }
+                    }).setPositiveButton("Buscar dispositivo", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            discoverDevices(onConnect);
                         }
                     })
                             .setTitle("Available devices")
@@ -222,6 +243,7 @@ public class BluetoothService {
             mOutputStream.close();
             mSocket.close();
             state = false;
+            S_Bluetooth = 0;
            // conect.setText("       Conectar       ");
             Toast.makeText(context, "Conexión finalizada", Toast.LENGTH_SHORT).show();
         }catch (Exception e){
@@ -257,7 +279,6 @@ public class BluetoothService {
             }
         };
     }
-
     //clase de segundo plano que lee la informacion obtenida.
     public class ConnectedThread extends Thread {
         private final InputStream mmInStream;
@@ -292,9 +313,125 @@ public class BluetoothService {
             }
         }
     }
+
+    //AlertDialog para mostrar los dispositivos.
+    private void dialogDevices(){
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+        builder.setAdapter(arrayAdapter, (dialog, which) -> {
+            mDevice = devicesAvailable.get(which);
+            Toast.makeText(context, "Conectando a: "+mDevice.getName(), Toast.LENGTH_SHORT).show();
+            try {
+                progress_dialog();
+                bluetoothConect(this.onConnect);
+            } catch (Exception e) {
+                Toast.makeText(context, "Error de conexión", Toast.LENGTH_SHORT).show();
+            }
+        })
+                .setTitle("Available devices")
+                .setCancelable(true);
+        AlertDialog Devices_Dialog = builder.create();
+        Devices_Dialog.show();
+    }
+
+
+    public void discoverDevices(OnConnect onConnect){
+        this.onConnect = onConnect;
+        devicesAvailable.clear();
+        arrayAdapter.clear();
+        progressDialog = new ProgressDialog(context);
+        progressDialog.setMessage("Buscando dispositivos. . . ");
+        progressDialog.show();
+
+        if(bluetoothAdapter.isDiscovering()){
+            Log.i("discoverDevices","Ya se está buscando dispositivos");
+        }else if(bluetoothAdapter.startDiscovery()){
+            Log.i("discoverDevices","Buscando dispositivos");
+        }else{
+            Log.i("discoverDevices","Error al buscar dispositivos.");
+        }
+    }
+
+    public void cancelDiscover(){
+        if(bluetoothAdapter.cancelDiscovery()){
+            Log.i("discoverDevices","Deteniendo busqueda de dispositivos");
+        }else{
+            Log.i("discoverDevices","Error al detener busqueda");
+        }
+        progressDialog.dismiss();
+    }
+
+    public final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            switch (action) {
+                case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
+                    Log.i("discoverDevices", "Inició la busqueda.");
+                    isScan = true;
+                    break;
+                case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
+                    if(isScan) {
+                        devicesAvailable = removeDuplicates(devicesAvailable);
+                        Log.i("discoverDevices", "Finalizó la busqueda. " + devicesAvailable.size() + " dispositivos encontrados.");
+                        progressDialog.dismiss();
+
+                        for (BluetoothDevice device : devicesAvailable) {
+                            Log.i("discoverDevices", "Device: " + device.getName() + " - " + device.getAddress());
+                            arrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                        }
+                        arrayAdapter.notifyDataSetChanged();
+                        isScan = false;
+                        dialogDevices();
+                    }else{
+                        activity.unregisterReceiver(broadcastReceiver);
+                        onConnect.OnSuccess();
+                    }
+                    break;
+                case BluetoothDevice.ACTION_FOUND:
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    //Log.i("discoverDevices","Dispositivo encontrado: "+device.getName());
+                    devicesAvailable.add(device);
+                    break;
+
+            }
+        }
+    };
+
+    public void checkPermissions() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.d("CIALC", "permission not granted yet!");
+            Log.d("CIALC","Whitout this permission Blutooth devices cannot be searched!");
+            ActivityCompat.requestPermissions(activity,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    42);
+        }
+    }
+
+    public static <T> ArrayList<T> removeDuplicates(ArrayList<T> list)
+    {
+        // Create a new ArrayList
+        ArrayList<T> newList = new ArrayList<T>();
+
+        // Traverse through the first list
+        for (T element : list) {
+
+            // If this element is not present in newList
+            // then add it
+            if (!newList.contains(element)) {
+
+                newList.add(element);
+            }
+        }
+
+        // return the new list
+        return newList;
+    }
     //******************************************************************************
     //******************************************************************************
 
+    //Interfaces de comunicación.
     public interface OnConnect{
         void OnSuccess();
         void OnFail();

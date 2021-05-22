@@ -14,11 +14,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,27 +24,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.cialc.localConnections.Utils;
+import com.cialc.Bluetooth.BluetoothService;
 import com.cialc.localConnections.VolleyConnection;
 import com.cialc.recycler.Adapter;
 import com.cialc.recycler.Dispositivo;
 
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, Adapter.ListClickItem {
     //Controles globales.
@@ -78,6 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         //----------------------------------------
 
          bt = BluetoothService.getInstance(this,(Activity) this);
+         bt.checkPermissions();
 
         createRecycler();
 
@@ -87,11 +72,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.bt_bluetooth:
-                //Se configura el BT.
                 bluetoohConfig();
                 break;
         }
     }
+
+    @Override
+    protected void onDestroy() {
+        //unregisterReceiver(bt.broadcastReceiver);
+        super.onDestroy();
+    }
+
 
     private void bluetoohConfig() {
         bt.configBluetooth(new BluetoothService.OnConnect() {
@@ -99,6 +90,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void OnSuccess() {
                 //dialogConfigWiFi();
                 dialogScanWiFi();
+                bt.onConnect = null;
             }
 
             @Override
@@ -185,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             arrayRedes.add(red.replace("*",""));
                 }
 
-                arrayRedes = removeDuplicates(arrayRedes);
+                arrayRedes = BluetoothService.removeDuplicates(arrayRedes);
 
                 String redesFinal[] = new String[arrayRedes.size()];
                 for(int k=0;k<arrayRedes.size();k++){
@@ -305,28 +297,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         drawable.draw(canvas);
 
         return bitmap;
-    }
-
-
-    public static <T> ArrayList<T> removeDuplicates(ArrayList<T> list)
-    {
-
-        // Create a new ArrayList
-        ArrayList<T> newList = new ArrayList<T>();
-
-        // Traverse through the first list
-        for (T element : list) {
-
-            // If this element is not present in newList
-            // then add it
-            if (!newList.contains(element)) {
-
-                newList.add(element);
-            }
-        }
-
-        // return the new list
-        return newList;
     }
 
     public String getIPAddress(String finalNumber) {
