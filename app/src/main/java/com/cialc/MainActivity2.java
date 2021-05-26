@@ -2,23 +2,37 @@ package com.cialc;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import com.cialc.localConnections.VolleyConnection;
 
-public class MainActivity2 extends AppCompatActivity {
+import java.util.Calendar;
 
+public class MainActivity2 extends AppCompatActivity implements View.OnClickListener {
+    Button buttonHora1, buttonHora2;
+    TextView textViewH1,textViewH2;
+    Switch switchHorario, switchTrans;
     ImageView btnback;
     TextView txtHost;
-    SeekBar seekBarIntensidad,seekBarTemperatura;
+    SeekBar seekBarIntensidad, seekBarTemperatura;
     String url = "";
+    private Object v;
+    private int hora, minutos;
+    private int hora2, minutos2;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +48,6 @@ public class MainActivity2 extends AppCompatActivity {
         txtHost = (TextView) findViewById(R.id.txtHost);
         txtHost.setText(intent.getStringExtra("host"));
         url = intent.getStringExtra("url");
-
         seekBarIntensidad = (SeekBar) findViewById(R.id.seekBarIntensidad);
         seekBarTemperatura = (SeekBar) findViewById(R.id.seekBarTemperatura);
 
@@ -54,11 +67,7 @@ public class MainActivity2 extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 //Log.i("Progeso stop: ", String.valueOf(seekBar.getProgress()));
                 int progreso = seekBarIntensidad.getProgress();
-                //Los calculos.
-
-
-
-                String comando = "/data?intensidad="+String.valueOf(progreso) + "&";
+                String comando = "/data?intensidad=" + String.valueOf(progreso) + "&";
                 String urlFinal = url + comando;
                 VolleyConnection.getInstance(getApplicationContext()).setRequest(urlFinal, new VolleyConnection.IVolleyResponse() {
                     @Override
@@ -89,8 +98,7 @@ public class MainActivity2 extends AppCompatActivity {
             public void onStopTrackingTouch(SeekBar seekBar) {
                 //Log.i("Progeso stop: ", String.valueOf(seekBar.getProgress()));
                 int progreso = seekBarTemperatura.getProgress();
-
-                String comando = "/data?temperatura="+String.valueOf(progreso) + "&";
+                String comando = "/data?temperatura=" + String.valueOf(progreso) + "&";
                 String urlFinal = url + comando;
                 VolleyConnection.getInstance(getApplicationContext()).setRequest(urlFinal, new VolleyConnection.IVolleyResponse() {
                     @Override
@@ -105,12 +113,53 @@ public class MainActivity2 extends AppCompatActivity {
                 });
             }
         });
-
+        //----------------------------------------------------------------------------------------
         int pIntensidad = Integer.parseInt(intent.getStringExtra("progressIntensidad"));
         int pTemperatura = Integer.parseInt(intent.getStringExtra("progressTemperatura"));
-
         seekBarIntensidad.setProgress(pIntensidad);
         seekBarTemperatura.setProgress(pTemperatura);
+        //----------------------------------------------------------------------------------------
+        buttonHora1 = (Button) findViewById(R.id.buttonHora1);
+        buttonHora2 = (Button) findViewById(R.id.buttonHora2);
+        textViewH1 = (TextView) findViewById(R.id.textViewH1);
+        textViewH2 = (TextView) findViewById(R.id.textViewH2);
+        buttonHora1.setOnClickListener(this);
+        buttonHora2.setOnClickListener(this);
+        //----------------------------------------------------------------------------------------
+
+    }
+
+
+    @Override
+    public void onClick(View v) {
+        if (v == buttonHora1) {
+            final Calendar c = Calendar.getInstance();
+            hora = c.get(Calendar.HOUR_OF_DAY);
+            minutos = c.get(Calendar.MINUTE);
+            TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+                @Override
+                public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+                    textViewH1.setText(hourOfDay+ ":" +minute);
+                }
+            }, hora, minutos, false);
+            timePickerDialog.show();
+        }
+        if(v == buttonHora2){
+            final Calendar c = Calendar.getInstance();
+            hora2 = c.get(Calendar.HOUR_OF_DAY);
+            minutos2 = c.get(Calendar.MINUTE);
+            TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
+                @Override
+                public void onTimeSet(TimePicker view, int hourOfDay2, int minute2) {
+                    textViewH2.setText(hourOfDay2+ ":" +minute2);
+                }
+            }, hora2, minutos2, false);
+            timePickerDialog.show();
+
+        }
+
+
+
 
     }
 }
