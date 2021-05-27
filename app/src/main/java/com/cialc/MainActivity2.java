@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -125,8 +126,20 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
         textViewH2 = (TextView) findViewById(R.id.textViewH2);
         buttonHora1.setOnClickListener(this);
         buttonHora2.setOnClickListener(this);
-        //----------------------------------------------------------------------------------------
+        switchHorario =(Switch)findViewById(R.id.switchHorario);
+        switchTrans = (Switch)findViewById(R.id.switchTrans);
+        switchHorario.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
+            }
+        });
+        switchTrans.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
+            }
+        });
     }
 
 
@@ -155,11 +168,7 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
                 }
             }, hora2, minutos2, false);
             timePickerDialog.show();
-
         }
-
-
-
-
     }
+
 }
