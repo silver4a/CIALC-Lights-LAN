@@ -16,6 +16,7 @@ import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.cialc.localConnections.VolleyConnection;
 
@@ -145,7 +146,7 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View v) {
-        if (v == buttonHora1) {
+        if (v == buttonHora1 && switchHorario.isChecked() || switchTrans.isChecked()) {
             final Calendar c = Calendar.getInstance();
             hora = c.get(Calendar.HOUR_OF_DAY);
             minutos = c.get(Calendar.MINUTE);
@@ -157,7 +158,7 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
             }, hora, minutos, false);
             timePickerDialog.show();
         }
-        if(v == buttonHora2){
+        if(v == buttonHora2 && switchHorario.isChecked() || switchTrans.isChecked()){
             final Calendar c = Calendar.getInstance();
             hora2 = c.get(Calendar.HOUR_OF_DAY);
             minutos2 = c.get(Calendar.MINUTE);
