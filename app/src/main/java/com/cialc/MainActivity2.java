@@ -3,8 +3,10 @@ package com.cialc;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.Image;
 import android.os.Build;
@@ -15,33 +17,34 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
-
 import com.cialc.localConnections.VolleyConnection;
-
+import com.cialc.recycler.Horario;
+import com.cialc.recycler.Trasition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity2 extends AppCompatActivity implements View.OnClickListener {
-    Button buttonHora1, buttonHora2, buttonSave;
-    TextView textViewH1,textViewH2, textViewH3, tiempo;
+    Button buttonHora1, buttonHora2, buttonSave, bt_savetrans;
+    TextView textViewH1,textViewH2, textViewH3, tiempo, Temptrans;
     Switch switchHorario, switchTrans;
     ImageView btnback;
     TextView txtHost;
-    SeekBar seekBarIntensidad, seekBarTemperatura;
+    SeekBar seekBarIntensidad, seekBarTemperatura, seekBartrans;
     String url = "";
     private Object v;
     private int hora, minutos;
     private int hora2, minutos2;
     private String getTime() {
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm;ss", Locale.getDefault());
         return dateFormatter.format(calendar.getTime());
     }
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -60,7 +63,6 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
         url = intent.getStringExtra("url");
         seekBarIntensidad = (SeekBar) findViewById(R.id.seekBarIntensidad);
         seekBarTemperatura = (SeekBar) findViewById(R.id.seekBarTemperatura);
-
         //Listeners.
         seekBarIntensidad.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -159,6 +161,7 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
             }
         });
         //--------------------------------------------------------------------------------------------
+        final Trasition transition = new Trasition(MainActivity2.this);
         switchHorario.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -177,6 +180,8 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
         if (v == buttonHora1 && switchHorario.isChecked()) {
+            final Horario horario = new Horario(MainActivity2.this);
+            horario.starthorario();
             final Calendar c = Calendar.getInstance();
             hora = c.get(Calendar.HOUR_OF_DAY);
             minutos = c.get(Calendar.MINUTE);
@@ -227,6 +232,8 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
             timePickerDialog.show();
         }
         if (v == buttonHora1 && switchTrans.isChecked()) {
+            final Trasition transition = new Trasition(MainActivity2.this);
+            transition.starttransition();
             final Calendar c = Calendar.getInstance();
             hora = c.get(Calendar.HOUR_OF_DAY);
             minutos = c.get(Calendar.MINUTE);
