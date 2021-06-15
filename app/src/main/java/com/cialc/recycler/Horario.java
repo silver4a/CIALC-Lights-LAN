@@ -2,6 +2,7 @@ package com.cialc.recycler;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.view.LayoutInflater;
+import android.widget.SeekBar;
 
 import com.cialc.R;
 public class Horario {
@@ -22,3 +23,4 @@ public class Horario {
         dialog.dismiss();
     }
 }
+

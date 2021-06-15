@@ -33,10 +33,11 @@
                 android:orientation="horizontal"></LinearLayout>
 
             <SeekBar
-                android:id="@+id/seekBar"
+                android:id="@+id/seekBarHorarioLight"
                 android:layout_width="241dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:max="255" />
 
             <LinearLayout
                 android:layout_width="15dp"
@@ -64,10 +65,11 @@
                 android:orientation="horizontal"></LinearLayout>
 
             <SeekBar
-                android:id="@+id/seekBar2"
+                android:id="@+id/seekBarHorarioTemp"
                 android:layout_width="231dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:max="255" />
 
             <LinearLayout
                 android:layout_width="wrap_content"

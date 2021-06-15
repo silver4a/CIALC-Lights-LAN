@@ -41,7 +41,8 @@
                 android:id="@+id/seekBartrans"
                 android:layout_width="293dp"
                 android:layout_height="wrap_content"
-                android:foregroundGravity="center" />
+                android:foregroundGravity="center"
+                android:max="255" />
         </LinearLayout>
 
         <LinearLayout
