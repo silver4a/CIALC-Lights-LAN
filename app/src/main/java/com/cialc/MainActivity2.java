@@ -1,16 +1,16 @@
 package com.cialc;
-
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.AlertDialog;
 import android.app.TimePickerDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.INotificationSideChannel;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -24,27 +24,32 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 import com.cialc.localConnections.VolleyConnection;
-//import com.cialc.recycler.Horario;
-//import com.cialc.recycler.Trasition;
+import android.content.SharedPreferences;
 
+import java.text.BreakIterator;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
 public class MainActivity2 extends AppCompatActivity implements View.OnClickListener {
-    Button buttonHora1, buttonHora2, buttonSave, bt_savetrans, bt_savehorario;
+    Button buttonHora1, buttonHora2;
     TextView textViewH1,textViewH2, textViewH3, tiempo, Temptrans, Txvhorariointencidad, Txvhorariotemp;
     Switch switchHorario, switchTrans;
     ImageView btnback;
     TextView txtHost;
-    SeekBar seekBarIntensidad, seekBarTemperatura, seekBartrans, seekBarHorarioLight, seekBarHorarioTemp;
+    SeekBar seekBarIntensidad, seekBarTemperatura;
     String url = "";
     private Object v;
     private int hora, minutos;
     private int hora2, minutos2;
     private Intent intent;
-
+    private SharedPreferences preferences;
+    private static final String PROGRESS = "SEEKBARH";
+    private static final String PROGRES = "SEEKBART";
+    private static final String PROGRE = "SEEKBARTRANS";
+    private static final String TEXT ="TEXT";
+    private String getString;
     private String getTime() {
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm;ss", Locale.getDefault());
@@ -137,13 +142,11 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
         //----------------------------------------------------------------------------------------
         buttonHora1 = (Button) findViewById(R.id.buttonHora1);
         buttonHora2 = (Button) findViewById(R.id.buttonHora2);
-        buttonSave = (Button) findViewById(R.id.buttonSave);
         textViewH1 = (TextView) findViewById(R.id.textViewH1);
         textViewH2 = (TextView) findViewById(R.id.textViewH2);
         textViewH3 = (TextView) findViewById(R.id.textViewH3);
         buttonHora1.setOnClickListener(this);
         buttonHora2.setOnClickListener(this);
-        buttonSave.setOnClickListener(this);
         switchHorario =(Switch)findViewById(R.id.switchHorario);
         switchTrans = (Switch)findViewById(R.id.switchTrans);
         //-------------------------------------------------------------------------------------
@@ -183,15 +186,24 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
         if (v == buttonHora1 && switchHorario.isChecked()) {
-            //final Horario horario = new Horario(MainActivity2.this);
-            //horario.starthorario();
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity2.this);
             View formView = getLayoutInflater().inflate(R.layout.horario,null);
+            builder.setCancelable(false);
             final SeekBar seekBarHorarioLight = (SeekBar)formView.findViewById(R.id.seekBarHorarioLight);
             final SeekBar seekBarHorarioTemp = (SeekBar)formView.findViewById(R.id.seekBarHorarioTemp);
+            preferences=getSharedPreferences(" ",MODE_PRIVATE);
+            final SharedPreferences.Editor editor =preferences.edit();
+            seekBarHorarioLight.setProgress(preferences.getInt(PROGRESS,0));
+            seekBarHorarioTemp.setProgress(preferences.getInt(PROGRES,0));
             final TextView Txvhorariointencidad = (TextView)formView.findViewById(R.id.Txvhorariointencidad);
             final TextView Txvhorariotemp = (TextView)formView.findViewById(R.id.Txvhorariotemp);
-            final Button bt_savehorario = (Button)formView.findViewById(R.id.bt_savehorario);
+            builder.setNegativeButton("close",new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                }
+            });
+
             seekBarHorarioLight.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -205,6 +217,8 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
+                    editor.putInt(PROGRESS, seekBarHorarioLight.getProgress());
+                    editor.apply();
                     int progreso = seekBarHorarioLight.getProgress();
                     String comando = "/data?horariolight=" + String.valueOf(progreso) + "&";
                     String urlFinal = url + comando;
@@ -234,6 +248,8 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
+                    editor.putInt(PROGRES, seekBarHorarioTemp.getProgress());
+                    editor.apply();
                     int progreso = seekBarHorarioTemp.getProgress();
                     String comando = "/data?horariotemp=" + String.valueOf(progreso) + "&";
                     String urlFinal = url + comando;
@@ -307,9 +323,19 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
         if (v == buttonHora1 && switchTrans.isChecked()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity2.this);
             View formView = getLayoutInflater().inflate(R.layout.transition,null);
+            builder.setCancelable(false);
             final SeekBar seekBartrans = (SeekBar)formView.findViewById(R.id.seekBartrans);
+            preferences=getSharedPreferences(" ", MODE_PRIVATE);
+            final SharedPreferences.Editor editor = preferences.edit();
+            seekBartrans.setProgress(preferences.getInt(PROGRE, 0));
+            //textViewH3.setText(preferences.getString(TEXT, ""));
             final TextView Temptrans = (TextView)formView.findViewById(R.id.Temptrans);
-            final Button bt_savetrans = (Button)formView.findViewById(R.id.bt_savetrans);
+            builder.setNegativeButton("close",new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
             seekBartrans.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -323,6 +349,8 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
+                    editor.putInt(PROGRE, seekBartrans.getProgress());
+                    editor.apply();
                     int progreso = seekBartrans.getProgress();
                     String comando = "/data?trans=" + String.valueOf(progreso) + "&";
                     String urlFinal = url + comando;
@@ -349,6 +377,8 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
                 @Override
                 public void onTimeSet(TimePicker view, int hourOfDay3, int minute3) {
                     textViewH3.setText(hourOfDay3+ ":" +minute3);
+                   // editor.putString(TEXT, textViewH3.getText().toString());
+                    //editor.apply();
                     String trans = "/data?TiempoTrans=" + String.valueOf(hourOfDay3+":"+minute3) + "&";
                     String urlFinal = url + trans;
                     VolleyConnection.getInstance(getApplicationContext()).setRequest(urlFinal, new VolleyConnection.IVolleyResponse() {
