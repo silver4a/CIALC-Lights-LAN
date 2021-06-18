@@ -48,8 +48,13 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
     private static final String PROGRESS = "SEEKBARH";
     private static final String PROGRES = "SEEKBART";
     private static final String PROGRE = "SEEKBARTRANS";
-    private static final String TEXT ="TEXT";
-    private String getString;
+    //_____________________________________________________
+    private static final String TEXT1 ="text1";
+    private static final String TEXT2 ="text2";
+    private static final String TEXT3 ="text3";
+    private static final String SWITCH1 = "switch1";
+    private static final String SWITCH2 = "switch2";
+    //______________________________________________________
     private String getTime() {
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat dateFormatter = new SimpleDateFormat("HH:mm;ss", Locale.getDefault());
@@ -167,17 +172,53 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
             }
         });
         //--------------------------------------------------------------------------------------------
-
+        preferences=getSharedPreferences(" ",MODE_PRIVATE);
+        final SharedPreferences.Editor editor =preferences.edit();
+        switchHorario.setChecked(preferences.getBoolean(SWITCH1, false));
+        switchTrans.setChecked(preferences.getBoolean(SWITCH2, false));
+        textViewH1.setText(preferences.getString(TEXT1, " "));
+        textViewH2.setText(preferences.getString(TEXT2, " "));
+        textViewH3.setText(preferences.getString(TEXT3, " "));
         switchHorario.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                editor.putBoolean(SWITCH1, switchHorario.isChecked());
+                editor.apply();
+                boolean switch1 = switchHorario.isChecked();
+                String comando ="/data?switchH=" + String.valueOf(switch1)+"&";
+                String urlFinal =  url+comando;
+                VolleyConnection.getInstance(getApplicationContext()).setRequest(urlFinal, new VolleyConnection.IVolleyResponse() {
+                    @Override
+                    public void onResponse(String response) {
 
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+
+                    }
+                });
             }
         });
         switchTrans.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                editor.putBoolean(SWITCH2, switchTrans.isChecked());
+                editor.apply();
+                boolean switch2 = switchTrans.isChecked();
+                String comando ="/data?switchT=" + String.valueOf(switch2)+"&";
+                String urlFinal =  url+comando;
+                VolleyConnection.getInstance(getApplicationContext()).setRequest(urlFinal, new VolleyConnection.IVolleyResponse() {
+                    @Override
+                    public void onResponse(String response) {
 
+                    }
+
+                    @Override
+                    public void onError(String errorMessage) {
+
+                    }
+                });
             }
         });
     }
@@ -185,14 +226,14 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View v) {
+        preferences=getSharedPreferences(" ",MODE_PRIVATE);
+        final SharedPreferences.Editor editor =preferences.edit();
         if (v == buttonHora1 && switchHorario.isChecked()) {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity2.this);
             View formView = getLayoutInflater().inflate(R.layout.horario,null);
             builder.setCancelable(false);
             final SeekBar seekBarHorarioLight = (SeekBar)formView.findViewById(R.id.seekBarHorarioLight);
             final SeekBar seekBarHorarioTemp = (SeekBar)formView.findViewById(R.id.seekBarHorarioTemp);
-            preferences=getSharedPreferences(" ",MODE_PRIVATE);
-            final SharedPreferences.Editor editor =preferences.edit();
             seekBarHorarioLight.setProgress(preferences.getInt(PROGRESS,0));
             seekBarHorarioTemp.setProgress(preferences.getInt(PROGRES,0));
             final TextView Txvhorariointencidad = (TextView)formView.findViewById(R.id.Txvhorariointencidad);
@@ -269,16 +310,18 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
             builder.setView(formView);
             AlertDialog dialog = builder.create();
             dialog.show();
-
             final Calendar c = Calendar.getInstance();
             hora = c.get(Calendar.HOUR_OF_DAY);
             minutos = c.get(Calendar.MINUTE);
             TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
                 @Override
                 public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                    textViewH1.setText(hourOfDay+ ":" +minute);
+                    String hm = (hourOfDay+":" +minute);
+                    textViewH1.setText(hm);
                     String ini = "/data?TiempoInicio=" + String.valueOf(hourOfDay+":"+minute) + "&";
                     String urlFinal = url + ini;
+                    editor.putString(TEXT1, textViewH1.getText().toString());
+                    editor.apply();
                     VolleyConnection.getInstance(getApplicationContext()).setRequest(urlFinal, new VolleyConnection.IVolleyResponse() {
                         @Override
                         public void onResponse(String response) {
@@ -295,7 +338,6 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
             timePickerDialog.show();
         }
         if(v == buttonHora2 && switchHorario.isChecked()){
-
             final Calendar c = Calendar.getInstance();
             hora2 = c.get(Calendar.HOUR_OF_DAY);
             minutos2 = c.get(Calendar.MINUTE);
@@ -305,6 +347,8 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
                     textViewH2.setText(hourOfDay2+ ":" +minute2);
                     String fin = "/data?TiempoFin=" + String.valueOf(hourOfDay2+":"+minute2) + "&";
                     String urlFinal = url + fin;
+                    editor.putString(TEXT2, textViewH2.getText().toString());
+                    editor.apply();
                     VolleyConnection.getInstance(getApplicationContext()).setRequest(urlFinal, new VolleyConnection.IVolleyResponse() {
                         @Override
                         public void onResponse(String response) {
@@ -325,8 +369,6 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
             View formView = getLayoutInflater().inflate(R.layout.transition,null);
             builder.setCancelable(false);
             final SeekBar seekBartrans = (SeekBar)formView.findViewById(R.id.seekBartrans);
-            preferences=getSharedPreferences(" ", MODE_PRIVATE);
-            final SharedPreferences.Editor editor = preferences.edit();
             seekBartrans.setProgress(preferences.getInt(PROGRE, 0));
             //textViewH3.setText(preferences.getString(TEXT, ""));
             final TextView Temptrans = (TextView)formView.findViewById(R.id.Temptrans);
@@ -377,10 +419,10 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
                 @Override
                 public void onTimeSet(TimePicker view, int hourOfDay3, int minute3) {
                     textViewH3.setText(hourOfDay3+ ":" +minute3);
-                   // editor.putString(TEXT, textViewH3.getText().toString());
-                    //editor.apply();
                     String trans = "/data?TiempoTrans=" + String.valueOf(hourOfDay3+":"+minute3) + "&";
                     String urlFinal = url + trans;
+                    editor.putString(TEXT3, textViewH3.getText().toString());
+                    editor.apply();
                     VolleyConnection.getInstance(getApplicationContext()).setRequest(urlFinal, new VolleyConnection.IVolleyResponse() {
                         @Override
                         public void onResponse(String response) {
