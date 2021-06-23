@@ -122,7 +122,7 @@ public class BluetoothService {
                         }
                     })
                             .setTitle("Available devices")
-                            .setCancelable(false);
+                            .setCancelable(true);
                     AlertDialog Devices_Dialog = builder.create();
                     Devices_Dialog.show();
                 }

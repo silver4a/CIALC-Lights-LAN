@@ -183,40 +183,37 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         bt.Get_items_Handler();
         String finalNumber1 = numberFinal;
         builder.setView(formView)
-                .setPositiveButton("Conectar", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        String ssidText = ssid.getText().toString();
-                        String passText = password.getText().toString();
-                        String hostText = hostname.getText().toString();
+                .setPositiveButton("Conectar", (dialog, which) -> {
+                    String ssidText = ssid.getText().toString();
+                    String passText = password.getText().toString();
+                    String hostText = hostname.getText().toString();
 
-                        String url = "http://"+getIPAddress(finalNumber1)+ "/data?auth=1";
-                        Log.i("INFO",url);
-                        progressDialog.setMessage("Configurando. . .");
-                        new Handler().postDelayed(() -> {
-                            VolleyConnection.getInstance(getApplicationContext()).setRequest(url, new VolleyConnection.IVolleyResponse() {
-                                @Override
-                                public void onResponse(String response) {
-                                    Log.i("INFO RESPONSE",response);
-                                    Log.i("Response",response);
-                                    if(response.contains("AUTENTICADO")){
-                                        progressDialog.dismiss();
-                                        Toast.makeText(MainActivity.this, "Se agregó dispositivo: "+hostText + " correctamente", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
-
-                                @Override
-                                public void onError(String errorMessage) {
-                                    //Log.i("INFO - ERROR MESSAJE",errorMessage);
+                    String url = "http://"+getIPAddress(finalNumber1)+ "/data?auth=1";
+                    Log.i("INFO",url);
+                    progressDialog.setMessage("Configurando. . .");
+                    new Handler().postDelayed(() -> {
+                        VolleyConnection.getInstance(getApplicationContext()).setRequest(url, new VolleyConnection.IVolleyResponse() {
+                            @Override
+                            public void onResponse(String response) {
+                                Log.i("INFO RESPONSE",response);
+                                Log.i("Response",response);
+                                if(response.contains("AUTENTICADO")){
                                     progressDialog.dismiss();
-                                    Toast.makeText(MainActivity.this, "Es necesario que reinicie el host.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(MainActivity.this, "Se agregó dispositivo: "+hostText + " correctamente", Toast.LENGTH_SHORT).show();
                                 }
-                            });
-                        },15000);
+                            }
 
-                        addDevice(ssidText,passText,hostText,finalNumber1);
-                        Writepreferences("IPNUMBER", finalNumber1);
-                    }
+                            @Override
+                            public void onError(String errorMessage) {
+                                //Log.i("INFO - ERROR MESSAJE",errorMessage);
+                                progressDialog.dismiss();
+                                Toast.makeText(MainActivity.this, "Es necesario que reinicie el host.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    },15000);
+
+                    addDevice(ssidText,passText,hostText,finalNumber1);
+                    Writepreferences("IPNUMBER", finalNumber1);
                 })
                 .setCancelable(false);
         AlertDialog formulario = builder.create();
@@ -256,14 +253,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             .setItems(redesFinal, (dialog, which) -> {
                                 dialogConfigWiFi(redesFinal[which]);
                             })
-                            .setPositiveButton("Consultar nuevamente", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    //Toast.makeText(MainActivity.this, "consultando again. . ", Toast.LENGTH_SHORT).show();
-                                    progressDialog.dismiss();
-                                    bt.onResponse = null;
-                                    dialogScanWiFi();
-                                }
+                            .setPositiveButton("Consultar nuevamente", (dialog, which) -> {
+                                //Toast.makeText(MainActivity.this, "consultando again. . ", Toast.LENGTH_SHORT).show();
+                                progressDialog.dismiss();
+                                bt.onResponse = null;
+                                dialogScanWiFi();
                             })
                             .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
                                 @Override
