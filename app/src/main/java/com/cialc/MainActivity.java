@@ -439,6 +439,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         intent.putExtra("url",url.substring(0,url.lastIndexOf("/")));
                         intent.putExtra("progressIntensidad",informacion[1]);
                         intent.putExtra("progressTemperatura",informacion[2]);
+                        intent.putExtra("progresoHorarioLight",informacion[3]);
+                        intent.putExtra("progresohorariotemp",informacion[4]);
+                        intent.putExtra("progresotrans",informacion[5]);
+                        intent.putExtra("switchH",informacion[6]);
+                        intent.putExtra("switchT",informacion[7]);
 
                         Log.i("Progreso",url.substring(0,url.lastIndexOf("/")));
                         startActivity(intent);

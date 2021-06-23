@@ -140,11 +140,6 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
         });
 
         //----------------------------------------------------------------------------------------
-        int pIntensidad = Integer.parseInt(intent.getStringExtra("progressIntensidad"));
-        int pTemperatura = Integer.parseInt(intent.getStringExtra("progressTemperatura"));
-        seekBarIntensidad.setProgress(pIntensidad);
-        seekBarTemperatura.setProgress(pTemperatura);
-        //----------------------------------------------------------------------------------------
         buttonHora1 = (Button) findViewById(R.id.buttonHora1);
         buttonHora2 = (Button) findViewById(R.id.buttonHora2);
         textViewH1 = (TextView) findViewById(R.id.textViewH1);
@@ -154,6 +149,15 @@ public class MainActivity2 extends AppCompatActivity implements View.OnClickList
         buttonHora2.setOnClickListener(this);
         switchHorario =(Switch)findViewById(R.id.switchHorario);
         switchTrans = (Switch)findViewById(R.id.switchTrans);
+        //----------------------------------------------------------------------------------------
+        int pIntensidad = Integer.parseInt(intent.getStringExtra("progressIntensidad"));
+        int pTemperatura = Integer.parseInt(intent.getStringExtra("progressTemperatura"));
+        boolean switchH = Boolean.parseBoolean(intent.getStringExtra("switchH"));
+        boolean switchT = Boolean.parseBoolean(intent.getStringExtra("switchT"));
+        seekBarIntensidad.setProgress(pIntensidad);
+        seekBarTemperatura.setProgress(pTemperatura);
+        switchHorario.setChecked(switchH);
+        switchTrans.setChecked(switchT);
         //-------------------------------------------------------------------------------------
         tiempo = (TextView)findViewById(R.id.tiempo);
         String tiempoo = getTime();
